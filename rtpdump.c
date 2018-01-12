@@ -579,7 +579,7 @@ void packet_handler(FILE *out, t_format format, int trunc,
     case F_hex:
     case F_ascii:
       if (ctrl == 0) {
-        fprintf(out, "%8ld.%06ld %s len=%d from=%s:%u ",
+        fprintf(out, "%ld.%06ld %s len=%d from=%s:%u ",
                 now.tv_sec, now.tv_usec, parse_type(ctrl, packet->p.data),
                 len, inet_ntoa(sin.sin_addr), ntohs(sin.sin_port));
         parse_data(out, packet->p.data, len);
