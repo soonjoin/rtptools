@@ -59,6 +59,7 @@
 #define close _close
 #define ftime _ftime
 #define timeb _timeb
+#define _TIMESPEC_T
 #endif /* _MSC_VER */
 
 #ifndef SIGBUS
