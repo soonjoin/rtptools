@@ -822,7 +822,7 @@ static Notify_value send_handler(Notify_client client)
 		  timeout_cnt = 0;
 	  else {
 		  timeout_cnt++;
-		  if (timeout_cnt >= 5) {
+		  if (timeout_cnt >= 20) { //更改为20测试下来比较保险，对性能影响也不大
 			  //printf("timeout\n");
 			  notify_stop();
 			  exit(0);
