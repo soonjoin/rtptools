@@ -44,7 +44,7 @@ static int verbose = 0;
 static FILE *in;
 static int sock[2];  /* output sockets */
 static int loop = 0; /* play file indefinitely if set */
-
+static int duration = 0; /*play duration. added by sujin*/
 
 /*
 * Node either has a parameter or a non-zero pointer to list.
@@ -60,7 +60,7 @@ typedef struct node {
 static void usage(char *argv0)
 {
   fprintf(stderr, 
-    "Usage: %s [-lav] [-s localport] [-f file] destination/port[/ttl]\n",
+    "Usage: %s [-lav] [-s localport] [-f file] [-d duration] destination/port[/ttl]\n",
     argv0);
   exit(1);
 } /* usage */
@@ -798,7 +798,8 @@ static Notify_value send_handler(Notify_client client)
   char text[MAX_TEXT_LINE];              /* current line from the file, including cont. lines */
   static int isfirstpacket = 1; /* is this the first packet? */
   double this;                  /* time this packet is being sent */
-  static double basetime;       /* base time (first packet) */ 
+  static double basetime;       /* base time (first packet) */
+  static double starttime;		/* time of start. added by sujin*/
   struct timeval next_tv;       /* time for next packet */
   char *s;
 
@@ -865,12 +866,22 @@ static Notify_value send_handler(Notify_client client)
     isfirstpacket = 0;
     this = packet.time;
     basetime = gettimeofday_d() - this;
+	// added by sujin
+	starttime = gettimeofday_d();
   }
   else if (this > packet.time) {
 	//rem by sujin
 	//fprintf(stderr, "Non-monotonic time %f - sent immediately.\n", packet.time);
     this = packet.time;
     basetime = gettimeofday_d() - this;
+  }
+  
+  // added by sujin for implement end play by the setted duration.
+  if ( duration > 0  && gettimeofday_d() - starttime >= duration)
+  {
+	  notify_stop();
+	  exit(0);
+	  return NOTIFY_DONE;
   }
 
   /* compute and set next playout time */
@@ -898,8 +909,11 @@ int main(int argc, char *argv[])
 
   /* parse command line arguments */
   startupSocket();
-  while ((c = getopt(argc, argv, "f:als:v?h")) != EOF) {
+  while ((c = getopt(argc, argv, "d:f:als:v?h")) != EOF) {
     switch(c) {
+	case 'd':
+		duration = atoi(optarg);
+		break;
     case 'f':
       filename = optarg;
       break;
