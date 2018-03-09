@@ -45,6 +45,7 @@ static FILE *in;
 static int sock[2];  /* output sockets */
 static int loop = 0; /* play file indefinitely if set */
 static int duration = 0; /*play duration. added by sujin*/
+static int ignore = 0; /*ignore recv date. added byu sujin*/
 
 /*
 * Node either has a parameter or a non-zero pointer to list.
@@ -60,7 +61,7 @@ typedef struct node {
 static void usage(char *argv0)
 {
   fprintf(stderr, 
-    "Usage: %s [-lav] [-s localport] [-f file] [-d duration] destination/port[/ttl]\n",
+    "Usage: %s [-lavi] [-s localport] [-f file] [-d duration] destination/port[/ttl]\n",
     argv0);
   exit(1);
 } /* usage */
@@ -814,7 +815,7 @@ static Notify_value send_handler(Notify_client client)
 
   /*add by sujin*/
   //发送数据后尝试收包，根据收包判断对端是否已关闭
-  if( packet.length > 0 )
+  if( packet.length > 0 && !ignore )
   {
 	  static int timeout_cnt = 0;
 	  char buf[1500]; //memset(buf, 0, sizeof(buf));
@@ -909,7 +910,7 @@ int main(int argc, char *argv[])
 
   /* parse command line arguments */
   startupSocket();
-  while ((c = getopt(argc, argv, "d:f:als:v?h")) != EOF) {
+  while ((c = getopt(argc, argv, "d:f:alis:v?h")) != EOF) {
     switch(c) {
 	case 'd':
 		duration = atoi(optarg);
@@ -923,6 +924,9 @@ int main(int argc, char *argv[])
     case 'l':  /* loop */
       loop = 1;
       break;
+	case 'i':  /* ignore recv data, added by sujin*/
+	  ignore = 1;
+	  break;
     case 's':  /* locked source port */
       sourceport = atoi(optarg);
       break;
